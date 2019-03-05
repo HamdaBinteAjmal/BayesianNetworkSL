@@ -67,3 +67,128 @@ ScoreEntirepossibleSetsOfParents <- function(dataS, tarNode, all_parents, beta)
   }
   return (allScores)
 }
+
+
+## Inner function , negative = TRUE if G1DBN, else for LASSO, negative = false
+## This takes all parent combinations as input and returns a list of the calculated weights for each parent combination
+
+CalculateWeightsOfOneTarget <- function(G1_mat,all_parent_combinations, target_idx, adjustment = 0, negative = TRUE)
+{
+  multiplier = 1
+  if (negative)
+  {
+    multiplier = -1
+    
+  }
+  all_weights <- lapply(all_parent_combinations, function(parents)
+  {
+    parents_idx <- as.numeric(substring(parents,2))
+    weights <- lapply(parents_idx, function(parent) 
+      return (G1_mat[target_idx, parent]))
+    
+    sum(unlist(lapply(weights, function(x) multiplier * (log(x) + adjustment))))
+  })
+  return(all_weights)
+}
+
+CalculateWeightsOfAllTargets <- function(all_parent_combinations, genes = 50, G1_mat, adjustment = 0, negative = TRUE)
+{
+  all_targets_weights <- lapply(1:genes, function(x) unlist(CalculateWeightsOfOneTarget(G1_mat, all_parent_combinations, x , adjustment, negative )))
+}
+## Takes input a list of all parent combinatios, and the id of the max scoring parents sets for
+## each target node. Combine all into one big BN
+ConstructBNUsingMaxScoringParents <- function(BICandWeight,  all_parent_combinations, allNodes)
+{
+  max_ids <- apply(BICandWeight, 1, which.max)
+  #allNodes = names(dataS)
+  All_possible_targets = allNodes[grepl("_1", allNodes)]
+  max_parents <- lapply(max_ids, function(x) unlist(all_parent_combinations[x]))
+  bn <- empty.graph(allNodes)
+  for (i in 1:length(All_possible_targets))
+    
+  {
+    target <- All_possible_targets[[i]]
+    parents <- max_parents[[i]]
+    
+    for (par in parents)
+    {
+      bn <- set.arc(bn, from = par, to = target)
+    }
+  }
+  return (bn)
+}
+## Combines BIC with weights.
+## If only interested in BIC, just set all_combintations_weights = 0
+## bic_scores is the return value of FullExhaustiveSearch. Its the BIC scores of 
+## each local bayesian network with all the combinations of parent sets. Its the output of calculate weights
+## of all target function.
+CombineBICandWeight <- function(all_targets_weights, bic_scores)
+{
+  BICandWeight <- t(mapply(function(x,y) x+y, bic_scores, all_targets_weights, SIMPLIFY = TRUE))
+  
+}
+
+Main_ExhaustiveSearchForBestParentSets <- function()
+{
+  setwd("C:/LispHome/FirstOrderCorPaperEval/")
+  source("ScriptForComparison.R")
+  set.seed(1)
+  p = 50
+  n = 20
+  
+  data <- SimulateData(Genes = 50, timepoints = 20,seed = 1)
+  G1_weights = ExecuteG1DBNS1(data$data, 0.7)
+  G1_mat = G1_weights$mat$S1ls
+  
+  blacklist = CreateBlackList(data = data$data)
+  dataS = ShiftData(data$data)
+  # scores = FullExhaustiveSearch(dataS) ## Expensive
+  save(scores, file = "scores.RData")
+  load(file = "scores.RData")
+  
+  
+  all_parents <-  names(dataS)[1:p]
+  all_parent_combinations <- MakeAllPossibleCombination(all_parents)
+  G1_weights = ExecuteG1DBNS1(data$data, 0.7)
+  G1_mat = G1_weights$mat$S1ls
+  lasso = ApplyLars(data$data)
+  
+  ## Only max BIC
+  Max_bic <- ConstructBNUsingMaxScoringParents(scores, all_parent_combinations, names(dataS))
+  
+  ## BIC + G1DBN. Adjustment = 0.
+  all_targets_weights <- CalculateWeightsOfAllTargets( all_parent_combinations, genes, G1_mat,  adjustment = 0, negative = TRUE)
+  bic_and_weights <- CombineBICandWeight(all_targets_weights, scores)
+  Max_BN <- ConstructBNUsingMaxScoringParents(bic_and_weights, all_parent_combinations, names(dataS))
+  
+
+  ## BIC + G1DBN. adjustment = 2.5
+  all_targets_weights_2.5 <- CalculateWeightsOfAllTargets( all_parent_combinations, genes, G1_mat,  adjustment = 2.5, negative = TRUE)
+  bic_and_weights_2.5 <- CombineBICandWeight(all_targets_weights_2.5, scores)
+  Max_BN_2.5 <- ConstructBNUsingMaxScoringParents(bic_and_weights_2.5, all_parent_combinations, names(dataS))
+  
+  ## BIC + G1DBN. Adjustment = 2.0
+  all_targets_weights_2.0 <- CalculateWeightsOfAllTargets( all_parent_combinations, genes, G1_mat,  adjustment = 2.0, negative = TRUE)
+  bic_and_weights_2.0 <- CombineBICandWeight(all_targets_weights_2.0, scores)
+  Max_BN_2.0 <- ConstructBNUsingMaxScoringParents(bic_and_weights_2.0, all_parent_combinations, names(dataS))
+  
+  ## BIC + lasso,, Adjustment = 0
+  all_target_lasso <- CalculateWeightsOfAllTargets( all_parent_combinations, p, lasso,  adjustment = 0, negative = FALSE)
+  bic_and_lasso <- CombineBICandWeight(all_target_lasso, scores)
+  max_BN_lasso <- ConstructBNUsingMaxScoringParents(bic_and_lasso, all_parent_combinations, names(dataS))
+
+  ## BIC + lasso, Adjustment = 2.5
+  all_target_lasso_2.5 <- CalculateWeightsOfAllTargets( all_parent_combinations, p, lasso,  adjustment = 2.5, negative = FALSE)
+  bic_and_lasso <- CombineBICandWeight(all_target_lasso_2.5, scores)
+  max_BN_lasso_2.5 <- ConstructBNUsingMaxScoringParents(bic_and_lasso_2.5, all_parent_combinations, names(dataS))
+  
+  
+  
+  ## BIC + lasso, Adjustment = 3.5
+  all_target_lasso_3.5 <- CalculateWeightsOfAllTargets( all_parent_combinations, p, lasso,  adjustment = 3.5, negative = FALSE)
+  bic_and_lasso <- CombineBICandWeight(all_target_lasso_3.5, scores)
+  max_BN_lasso_3.5 <- ConstructBNUsingMaxScoringParents(bic_and_lasso_2.5, all_parent_combinations, names(dataS))
+  
+  
+  
+  }
