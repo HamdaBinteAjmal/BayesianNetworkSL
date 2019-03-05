@@ -1,6 +1,10 @@
 
 ## Full Exhaustive Search to calculate scores of all the all possible sets of parents (max parents = 3)
-FullExhaustiveSearch <- function(dataS, beta = NULL)
+
+
+## This coded combines BIC score with the weights calculated using the G1DBN score and the lasso score.
+## For G1DBN score, do BIC_score -log(G1DBN_score)-adjustment
+## Adjustment is calculated by looking at the graphFullExhaustiveSearch <- function(dataS, beta = NULL)
 {
   allNodes = names(dataS)
   All_possible_parents = allNodes[!grepl("_1", allNodes)]
