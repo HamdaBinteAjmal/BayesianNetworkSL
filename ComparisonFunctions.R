@@ -194,7 +194,6 @@ ConvertToBN <-function(MyNet)
   newAdjMat[1:p, 1:p+p] = t(MyNet$AdjMatrix)
   new_bn = bnlearn::empty.graph(colnames(newAdjMat))
   amat(new_bn) = newAdjMat
-  plot(new_bn)
   new_bn
 }
 ConvertToBNFromG <- function(G, geneCount)
