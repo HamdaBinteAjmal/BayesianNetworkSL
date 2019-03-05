@@ -134,7 +134,6 @@ CombineBICandWeight <- function(all_targets_weights, bic_scores)
 
 Main_ExhaustiveSearchForBestParentSets <- function()
 {
-  setwd("C:/LispHome/FirstOrderCorPaperEval/")
   source("ScriptForComparison.R")
   set.seed(1)
   p = 50

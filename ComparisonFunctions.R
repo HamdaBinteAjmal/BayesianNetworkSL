@@ -131,7 +131,6 @@ PRCurve_GeneNet <- function (score, validMat, dec = TRUE, index = 0)
     TP = sum((learnedNet==TRUE) * (validMat == TRUE), na.rm = TRUE)
     FP = sum((learnedNet == TRUE)  * (validMat == FALSE ), na.rm = TRUE)
     FN = sum((learnedNet == FALSE) * (validMat == TRUE), na.rm = TRUE)
-                                                                    tri[j] * (score < 1), na.rm = TRUE)
     recall[j] =  TP / (TP + FN)
     precision[j] = TP / (TP + FP)
     
