@@ -87,29 +87,3 @@ DBNList <- list("pc_0.01" = pc_0.01, "pc_0.05" = pc_0.05, "pc_0.1" = pc_0.1,
 GenerateResults(dataS, DBNList, realDBN)
 
 
-## Since in our data edges can only move forwards, so if there is any undirected edges, convert them into
-## directed edges as arcs can only go from previous time slice to next time slice.
-OrientEdges <- function (bn)
-{
-  edge.set <- arcs(bn)
-  bn_directed <- empty.graph(nodes = nodes(bn))
-  for (i in 1:nrow(edge.set))
-  {
-    edge <- edge.set[i,]
-    if(grepl("_", edge[1]))
-    {
-      to = edge[1]
-      from = edge[2]
-    }
-    else
-    {
-      to = edge[2]
-      from = edge[1]
-      
-    }
-    bn_directed <- set.arc(bn_directed, to = to, from = from)
-    
-  }
-  return (bn_directed)
-  
-}
