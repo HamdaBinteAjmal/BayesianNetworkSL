@@ -4,7 +4,9 @@
 
 ## This coded combines BIC score with the weights calculated using the G1DBN score and the lasso score.
 ## For G1DBN score, do BIC_score -log(G1DBN_score)-adjustment
-## Adjustment is calculated by looking at the graphFullExhaustiveSearch <- function(dataS, beta = NULL)
+## Adjustment is calculated by looking at the graph
+
+FullExhaustiveSearch <- function(dataS, beta = NULL)
 {
   allNodes = names(dataS)
   All_possible_parents = allNodes[!grepl("_1", allNodes)]
@@ -143,35 +145,35 @@ Main_ExhaustiveSearchForBestParentSets <- function()
   G1_weights = ExecuteG1DBNS1(data$data, 0.7)
   G1_mat = G1_weights$mat$S1ls
   
-  blacklist = CreateBlackList(data = data$data)
   dataS = ShiftData(data$data)
-  # scores = FullExhaustiveSearch(dataS) ## Expensive
+  scores = FullExhaustiveSearch(dataS) ## Expensive
   save(scores, file = "scores.RData")
-  load(file = "scores.RData")
+#  scores <- load(file = "scores.RData")
   
   
   all_parents <-  names(dataS)[1:p]
   all_parent_combinations <- MakeAllPossibleCombination(all_parents)
-  G1_weights = ExecuteG1DBNS1(data$data, 0.7)
-  G1_mat = G1_weights$mat$S1ls
-  lasso = ApplyLars(data$data)
+ 
+   lasso = ApplyLars(data$data)
   
   ## Only max BIC
-  Max_bic <- ConstructBNUsingMaxScoringParents(scores, all_parent_combinations, names(dataS))
+
+  bic_and_zeros <- do.call(rbind,scores)
+  Max_bic <- ConstructBNUsingMaxScoringParents(bic_and_zeros, all_parent_combinations, names(dataS))
   
   ## BIC + G1DBN. Adjustment = 0.
-  all_targets_weights <- CalculateWeightsOfAllTargets( all_parent_combinations, genes, G1_mat,  adjustment = 0, negative = TRUE)
+  all_targets_weights <- CalculateWeightsOfAllTargets( all_parent_combinations, p, G1_mat,  adjustment = 0, negative = TRUE)
   bic_and_weights <- CombineBICandWeight(all_targets_weights, scores)
-  Max_BN <- ConstructBNUsingMaxScoringParents(bic_and_weights, all_parent_combinations, names(dataS))
+  Max_BN_0 <- ConstructBNUsingMaxScoringParents(bic_and_weights, all_parent_combinations, names(dataS))
   
 
   ## BIC + G1DBN. adjustment = 2.5
-  all_targets_weights_2.5 <- CalculateWeightsOfAllTargets( all_parent_combinations, genes, G1_mat,  adjustment = 2.5, negative = TRUE)
+  all_targets_weights_2.5 <- CalculateWeightsOfAllTargets( all_parent_combinations, p, G1_mat,  adjustment = 2.5, negative = TRUE)
   bic_and_weights_2.5 <- CombineBICandWeight(all_targets_weights_2.5, scores)
   Max_BN_2.5 <- ConstructBNUsingMaxScoringParents(bic_and_weights_2.5, all_parent_combinations, names(dataS))
   
   ## BIC + G1DBN. Adjustment = 2.0
-  all_targets_weights_2.0 <- CalculateWeightsOfAllTargets( all_parent_combinations, genes, G1_mat,  adjustment = 2.0, negative = TRUE)
+  all_targets_weights_2.0 <- CalculateWeightsOfAllTargets( all_parent_combinations, p, G1_mat,  adjustment = 2.0, negative = TRUE)
   bic_and_weights_2.0 <- CombineBICandWeight(all_targets_weights_2.0, scores)
   Max_BN_2.0 <- ConstructBNUsingMaxScoringParents(bic_and_weights_2.0, all_parent_combinations, names(dataS))
   
@@ -182,16 +184,20 @@ Main_ExhaustiveSearchForBestParentSets <- function()
 
   ## BIC + lasso, Adjustment = 2.5
   all_target_lasso_2.5 <- CalculateWeightsOfAllTargets( all_parent_combinations, p, lasso,  adjustment = 2.5, negative = FALSE)
-  bic_and_lasso <- CombineBICandWeight(all_target_lasso_2.5, scores)
+  bic_and_lasso_2.5 <- CombineBICandWeight(all_target_lasso_2.5, scores)
   max_BN_lasso_2.5 <- ConstructBNUsingMaxScoringParents(bic_and_lasso_2.5, all_parent_combinations, names(dataS))
   
   
   
   ## BIC + lasso, Adjustment = 3.5
   all_target_lasso_3.5 <- CalculateWeightsOfAllTargets( all_parent_combinations, p, lasso,  adjustment = 3.5, negative = FALSE)
-  bic_and_lasso <- CombineBICandWeight(all_target_lasso_3.5, scores)
+  bic_and_lasso_3.5 <- CombineBICandWeight(all_target_lasso_3.5, scores)
   max_BN_lasso_3.5 <- ConstructBNUsingMaxScoringParents(bic_and_lasso_2.5, all_parent_combinations, names(dataS))
   
-  
-  
+  realDBN <- ConvertToBN(data$RealNet)   
+  DBNList <- list("BIC" = Max_bic, "BIC_G1DBN" = Max_BN_0, "BIC_G1DBN_2." = Max_BN_2.0, "BIC_G1DBN_2.5" = Max_BN_2.5,
+                  "BIC_lasso" = max_BN_lasso, "BIC_lasso_2.5" = max_BN_lasso_2.5, "BIC_lasso_3.5" = max_BN_lasso_3.5, "Real" = realDBN)
+   
+   
+  GenerateResults(dataS, DBNList, realDBN)
   }
