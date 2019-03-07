@@ -28,8 +28,6 @@ DELDBN <- function(dataS, alpha)
         bn <- set.arc(bn, from = parents[p], to = target)
       }
     }
-    
-    
   }
   return (bn)
 }
@@ -39,6 +37,6 @@ delDBN_0.01 <- DELDBN(dataS,0.01)
 delDBN_0.05 <- DELDBN(dataS, 0.05)
 delDBN_0.1 <- DELDBN(dataS, 0.1)
 
-DBNList <- list("DELDBN" = delDBN_0.001, "DELDBN" = delDBN_0.005, "DELDBN" = delDBN_0.01 ,"DELDBN" = delDBN_0.05, "DELDBN" = delDBN_0.1, "real" = realDBN)
+DBNList <- list("DELDBN_0.001" = delDBN_0.001, "DELDBN_0.005" = delDBN_0.005, "DELDBN_0.01" = delDBN_0.01 ,"DELDBN_0.05" = delDBN_0.05, "DELDBN_0.1" = delDBN_0.1, "real" = realDBN)
 GenerateResults(dataS, DBNList, realDBN)
 
