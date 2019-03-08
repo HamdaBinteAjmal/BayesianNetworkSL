@@ -146,9 +146,9 @@ Main_ExhaustiveSearchForBestParentSets <- function()
   G1_mat = G1_weights$mat$S1ls
   
   dataS = ShiftData(data$data)
-  scores = FullExhaustiveSearch(dataS) ## Expensive
-  save(scores, file = "scores.RData")
-#  scores <- load(file = "scores.RData")
+ # scores = FullExhaustiveSearch(dataS) ## Expensive
+  save(scores, file = "scores.Rda")
+    load(file = "scores.RData")
   
   
   all_parents <-  names(dataS)[1:p]
