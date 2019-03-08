@@ -106,9 +106,9 @@ main <- function()
   
   gs_lasso_adj_3 <- GreedySearchParentsWithAdjustedWeight(data = df, p = 50, n = 20, score_mat = lasso,negative = FALSE, adjustment = 3)
   
-  DBNList1 <-  list("gs_bic" = gs_bic_only, "gs_G1DBN_0" = gs_weight_adj_0, "gs_G1DBN_2.5" = gs_weight_adj_2.5,
+  DBNList <-  list("gs_bic" = gs_bic_only, "gs_G1DBN_0" = gs_weight_adj_0, "gs_G1DBN_2.5" = gs_weight_adj_2.5,
                "gs_lasso_0" = gs_lasso_adj_0, "gs_lasso_3" = gs_lasso_adj_3)
-  DBNList <- append(DBNList, DBNList1)
+  #DBNList <- append(DBNList, DBNList1)
   GenerateResults(dataS, DBNList, RealDBN = realDBN)
   
 }
