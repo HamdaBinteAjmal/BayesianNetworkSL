@@ -2,8 +2,29 @@
 
 
 library(bnlearn)
-data= dataset$data#ead.table("data_1.txt")
+data= dataset$data
 data2= dataS
+dataD <- DifferentialData(data)
+DifferentialData <- function(data)
+{
+  n = nrow(data)
+  p = ncol(data)
+  data2 = as.data.frame(matrix(NA, ncol = 2*p, nrow = n-1))
+  new_names = vector(length = p)
+  names = vector(length = p)
+  for(i in 1:p)
+  {
+    new_names[i] = paste0("V", i , "_1")
+    names[i] = paste0("V",i)
+  }
+  
+  dataD <- data[2:nrow(data),] - data[1:(nrow(data)-1),]
+  data2[,1:p] <- data[-1,]
+  data2[,(p+1):(p*2)] <- dataD
+  names(data2) <- c(names, new_names)
+  return(data2)
+    
+}
 
 DELDBN <- function(dataS, alpha)
 {
@@ -37,6 +58,15 @@ delDBN_0.01 <- DELDBN(dataS,0.01)
 delDBN_0.05 <- DELDBN(dataS, 0.05)
 delDBN_0.1 <- DELDBN(dataS, 0.1)
 
+
+## Not working with tDelta values, because, maybe, the data isnt simulated thatt way. 
+delDBN_D_0.001 <- DELDBN(dataD, 0.001)
+delDBN_D_0.005 <- DELDBN(dataD, 0.005)
+delDBN_D_0.01 <- DELDBN(dataD, 0.01)
+delDBN_D_0.05 <- DELDBN(dataD, 0.05)
+delDBN_D_0.1 <- DELDBN(dataD, 0.1)
 DBNList <- list("DELDBN_0.001" = delDBN_0.001, "DELDBN_0.005" = delDBN_0.005, "DELDBN_0.01" = delDBN_0.01 ,"DELDBN_0.05" = delDBN_0.05, "DELDBN_0.1" = delDBN_0.1, "real" = realDBN)
 GenerateResults(dataS, DBNList, realDBN)
 
+DBNList <- list("DELDBN_D_0.001" = delDBN_D_0.001, "DELDBN_D_0.005" = delDBN_D_0.005, "DELDBN_D_0.01" = delDBN_D_0.01 ,"DELDBN_D_0.05" = delDBN_D_0.05, "DELDBN_D_0.1" = delDBN_D_0.1, "real" = realDBN)
+GenerateResults(dataD, DBNList, realDBN)
