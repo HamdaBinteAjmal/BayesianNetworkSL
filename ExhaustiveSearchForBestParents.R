@@ -6,6 +6,13 @@
 ## For G1DBN score, do BIC_score -log(G1DBN_score)-adjustment
 ## Adjustment is calculated by looking at the graph
 
+seeds = 1:100
+p = 50
+n = 20
+noiseLevel = 10
+
+datasets = lapply(seeds, function(x) SimulateData(p,n,noiseLevel, x ))
+
 FullExhaustiveSearch <- function(dataS, beta = NULL)
 {
   allNodes = names(dataS)
@@ -115,10 +122,12 @@ ConstructBNUsingMaxScoringParents <- function(BICandWeight,  all_parent_combinat
   {
     target <- All_possible_targets[[i]]
     parents <- max_parents[[i]]
-    
-    for (par in parents)
+    if(!is.na(parents))
     {
-      bn <- set.arc(bn, from = par, to = target)
+      for (par in parents)
+      {
+        bn <- set.arc(bn, from = par, to = target)
+      }
     }
   }
   return (bn)
@@ -158,6 +167,7 @@ Main_ExhaustiveSearchForBestParentSets <- function()
   
   ## Only max BIC
 
+  
   bic_and_zeros <- do.call(rbind,scores)
   Max_bic <- ConstructBNUsingMaxScoringParents(bic_and_zeros, all_parent_combinations, names(dataS))
   
@@ -200,4 +210,32 @@ Main_ExhaustiveSearchForBestParentSets <- function()
    
    
   GenerateResults(dataS, DBNList, realDBN)
-  }
+}
+
+## Do it 4 100 datasets, gonna be very time consuming.
+
+
+dataS_100 <- lapply(datasets, function(x) ShiftData(x$data))
+scores_100 <-  lapply(dataS_100, function(x) FullExhaustiveSearch(x)) ## Expensive
+save(scores_100,file = "scors_100.rds")
+
+
+## Only BIC score 
+## This has a problem that it mostly favours graphs with most nodes
+bic_and_zeros_100 <- lapply(scores_100, function(x) do.call(rbind,x))
+idx <- 0
+Max_bics_100 <- lapply(1:length(bic_and_zeros_100), function(x)
+  {
+    print(x)
+    
+    ConstructBNUsingMaxScoringParents(bic_and_zeros_100[[x]], all_parent_combinations, names(dataS))
+  })
+
+results_max_bics_100 <- CalculatePrecisionAndRecallForMultiple(Max_bics_100, datasets)
+
+## BIC + G1DBN. Adjustment = 0.
+
+all_targets_weights <- lapply(G1s, function(x) CalculateWeightsOfAllTargets( all_parent_combinations, p, x$mat$S1ls,  adjustment = 0, negative = TRUE))
+bic_and_weights <- CombineBICandWeight(all_targets_weights, scores)
+Max_BN_0 <- ConstructBNUsingMaxScoringParents(bic_and_weights, all_parent_combinations, names(dataS))
+
