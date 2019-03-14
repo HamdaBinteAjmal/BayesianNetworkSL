@@ -278,6 +278,7 @@ CalculatePrecisionAndRecallForMultiple(DBNList, datasets)
 
 ## lasso 
 lasso_100 = lapply(datasets, function(x) ApplyLars(x$data))
+save(lasso_100, file = "lasso_100.rds")
 ## BIC + lasso,, Adjustment = 0
 
 all_targets_lasso_100 <- lapply(lasso_100, function(x) CalculateWeightsOfAllTargets( all_parent_combinations, p, x))
