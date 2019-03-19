@@ -62,6 +62,7 @@ mmpc_0.01 <- mmpc(x = dataS, cluster = NULL, whitelist = NULL, blacklist = bl, t
                   alpha = 0.01, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
                   strict = FALSE, undirected = FALSE)
 
+
 mmpc_0.1 <- mmpc(x = dataS, cluster = NULL, whitelist = NULL, blacklist = bl, test = NULL,
                   alpha = 0.1, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
                   strict = FALSE, undirected = FALSE)
@@ -86,4 +87,115 @@ DBNList <- list("pc_0.01" = pc_0.01, "pc_0.05" = pc_0.05, "pc_0.1" = pc_0.1,
                 "real" = realDBN)
 GenerateResults(dataS, DBNList, realDBN)
 
+## 100 runs ##
+seeds = 1:100
+p = 50
+n = 20
+noiseLevel = 10
+datasets = lapply(seeds, function(x) SimulateData(p,n,noiseLevel, x ))
+bl <- CreateBlackList(datasets[[1]]$data)
 
+
+pc_0.05_100 <- mclapply(datasets, function(x) pc.stable(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl,
+                                                      alpha = 0.05, B = NULL, max.sx = NULL, debug = FALSE, undirected = FALSE))
+CalculatePrecisionAndRecallForMultiple(pc_0.05_100, datasets)
+
+pc_0.01_100 <- mclapply(datasets, function(x) pc.stable(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl,
+                     alpha = 0.01, B = NULL, max.sx = NULL, debug = FALSE, undirected = FALSE))
+CalculatePrecisionAndRecallForMultiple(pc_0.01_100, datasets)
+
+
+pc_0.1_100 <- mclapply(datasets, function(x) pc.stable(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl,
+                    alpha = 0.1, B = NULL, max.sx = NULL, debug = FALSE, undirected = FALSE))
+CalculatePrecisionAndRecallForMultiple(pc_0.1_100, datasets)
+
+
+gs_0.05_100 <- mclapply(datasets, function(x) gs(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, 
+              alpha = 0.05, debug = FALSE, optimized = FALSE, strict = FALSE, undirected = FALSE))
+CalculatePrecisionAndRecallForMultiple(gs_0.05_100, datasets)
+
+
+gs_0.01_100 <-  mclapply(datasets, function(x) gs(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, 
+              alpha = 0.01, debug = FALSE, optimized = FALSE, strict = FALSE, undirected = FALSE))
+CalculatePrecisionAndRecallForMultiple(gs_0.01_100, datasets)
+
+
+gs_0.1_100 <-  mclapply(datasets, function(x) gs(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, 
+             alpha = 0.1, debug = FALSE, optimized = FALSE, strict = FALSE, undirected = FALSE))
+CalculatePrecisionAndRecallForMultiple(gs_0.1_100, datasets)
+
+
+
+dns <- iamb_0.05_100 <-  mclapply(datasets, function(x) iamb(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, test = NULL,
+                  alpha = 0.05, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
+                  strict = FALSE, undirected = FALSE))
+CalculatePrecisionAndRecallForMultiple(dns, datasets)
+
+
+dns <- iamb_0.01_100 <- mclapply(datasets, function(x) iamb(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, test = NULL,
+                  alpha = 0.01, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
+                  strict = FALSE, undirected = FALSE))
+dns <- iamb_0.1_100 <- mclapply(datasets, function(x) iamb(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, test = NULL,
+                 alpha = 0.1, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
+                 strict = FALSE, undirected = FALSE))
+dns <- iamb_0.2_100 <- mclapply(datasets, function(x) iamb(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, test = NULL,
+                 alpha = 0.2, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
+                 strict = FALSE, undirected = FALSE))
+dns <- iamb_0.05_100 <-  mclapply(datasets, function(x) iamb(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, test = NULL,
+                                                             alpha = 0.05, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
+                                                             strict = FALSE, undirected = FALSE))
+
+
+
+fiamb_0.01_100 <- mclapply(datasets, function(x) fast.iamb(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, test = NULL,
+                                                            alpha = 0.01, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
+                                                            strict = FALSE, undirected = FALSE))
+CalculatePrecisionAndRecallForMultiple(fiamb_0.01_100, datasets)
+fiamb_0.1_100 <- mclapply(datasets, function(x) fast.iamb(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, test = NULL,
+                                                           alpha = 0.1, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
+                                                           strict = FALSE, undirected = FALSE))
+CalculatePrecisionAndRecallForMultiple(fiamb_0.1_100, datasets)
+
+
+fiamb_0.05_100 <- mclapply(datasets, function(x) fast.iamb(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, test = NULL,
+                                                           alpha = 0.05, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
+                                                           strict = FALSE, undirected = FALSE))
+
+CalculatePrecisionAndRecallForMultiple(fiamb_0.05_100, datasets)
+
+
+mmpc_0.05_100 <- mclapply(datasets, function(x) mmpc(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, test = NULL,
+                  alpha = 0.05, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
+                  strict = FALSE, undirected = FALSE))
+CalculatePrecisionAndRecallForMultiple(mmpc_0.05_100, datasets)
+
+mmpc_0.01_100 <-  mclapply(datasets, function(x) mmpc(x = ShiftData(x$data),cluster = NULL, whitelist = NULL, blacklist = bl, test = NULL,
+                  alpha = 0.01, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
+                  strict = FALSE, undirected = FALSE))
+CalculatePrecisionAndRecallForMultiple(mmpc_0.01_100, datasets)
+
+
+mmpc_0.1_100 <-  mclapply(datasets, function(x) mmpc(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, test = NULL,
+                 alpha = 0.1, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
+                 strict = FALSE, undirected = FALSE))
+CalculatePrecisionAndRecallForMultiple(mmpc_0.1_100, datasets)
+
+
+hiton_0.05_100 <- mclapply(datasets, function(x) si.hiton.pc(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, test = NULL,
+                          alpha = 0.05, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
+                          strict = FALSE, undirected = FALSE))
+
+CalculatePrecisionAndRecallForMultiple(hiton_0.05_100, datasets)
+
+
+hiton_0.01_100 <-mclapply(datasets, function(x) si.hiton.pc(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, test = NULL,
+                                                        alpha = 0.01, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
+                                                        strict = FALSE, undirected = FALSE))
+CalculatePrecisionAndRecallForMultiple(hiton_0.01_100, datasets)
+
+
+hiton_0.1_100 <- mclapply(datasets, function(x) si.hiton.pc(x = ShiftData(x$data), cluster = NULL, whitelist = NULL, blacklist = bl, test = NULL,
+                                                        alpha = 0.1, B = NULL, max.sx = NULL, debug = FALSE, optimized = FALSE,
+                                                        strict = FALSE, undirected = FALSE))
+
+CalculatePrecisionAndRecallForMultiple(hiton_0.1_100, datasets)
