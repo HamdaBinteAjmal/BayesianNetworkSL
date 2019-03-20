@@ -98,7 +98,7 @@ delDBN_0.01_d_100 <- mclapply(datasets, function(x) DELDBN(DifferentialData(x$da
 CalculatePrecisionAndRecallForMultiple(delDBN_0.01_d_100, datasets)
 
 delDBN_0.05_d_100 <- mclapply(datasets, function(x) DELDBN(DifferentialData(x$data),0.05))
-CalculatePrecisionAndRecallForMultiple(delDBN_0.05_s_100, datasets)
+CalculatePrecisionAndRecallForMultiple(delDBN_0.05_d_100, datasets)
 
 delDBN_0.1_d_100 <- mclapply(datasets, function(x) DELDBN(DifferentialData(x$data),0.1))
 CalculatePrecisionAndRecallForMultiple(delDBN_0.1_d_100, datasets)
