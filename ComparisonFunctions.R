@@ -297,3 +297,64 @@ CalculateMeans <- function(curves)
   mean_precisions = rowMeans(all_precisions, na.rm = TRUE)
   return(list("recall"  = mean_recalls, "precisions" = mean_precisions))
 }
+
+library(e1071)
+CalculatePrecisionAndRecallForMultiple <- function(DBNList, datasets)
+{
+  dbns <- lapply(DBNList, function(x) GetAMAT(amat(x)))
+  reals <- lapply(datasets, function(x) t(x$RealNet$AdjMatrix))
+  realdbns <- lapply(datasets, function (x) ConvertToBN(x$RealNet))
+  confs_mats <- mapply(function(dbn, real)
+    {
+    confusionMatrix( reference = factor(real), data = factor(dbn), positive = "1")
+    
+    }, dbns, reals, SIMPLIFY = FALSE)
+  precisions = unlist(lapply(confs_mats, function(x) x$byClass[3]))
+  recalls = unlist(lapply(confs_mats, function(x) x$byClass[1]))
+  hammings = unlist(mapply(function(x,y) hamming(learned = x, true = y), DBNList, realdbns, SIMPLIFY = FALSE))
+  # hammings = unlist(mapply(function(dbn, real) 
+  #   {
+  #     length(which(dbn&real) == FALSE)
+  #   
+  #   }, dbns, reals, SIMPLIFY = FALSE))
+  # 
+
+  precision_mean <- mean(precisions, na.rm = TRUE)
+  precision_sd <- sd(precisions,  na.rm = TRUE)
+  recall_mean <- mean(recalls, na.rm = TRUE)
+  recall_sd <- sd(recalls, na.rm = TRUE)
+  hamming_mean <- mean(hammings, na.rm = TRUE)
+  hamming_sd <- sd(hammings, na.rm = TRUE)
+  
+  return (list("precision_mean" = precision_mean, "precision_sd" = precision_sd,
+               "recall_mean" = recall_mean, "recall_sd" = recall_sd,
+               "hamming_mean" = hamming_mean, "hamming_sd" = hamming_sd))
+  
+  
+}
+
+SignificanceTests <- function(DBNList1, DBNList2, datasets)
+{
+  dbns1 <- lapply(DBNList1, function(x) GetAMAT(amat(x)))
+  dbns2 <- lapply(DBNList2, function(x) GetAMAT(amat(x)))
+  reals <- lapply(datasets, function(x) t(x$RealNet$AdjMatrix))
+  confs_mats1 <- mapply(function(dbn1, real)
+  {
+    confusionMatrix( reference = factor(real), data = factor(dbn1), positive = "1")
+    
+  }, dbns1, reals, SIMPLIFY = FALSE)
+  precisions1 = unlist(lapply(confs_mats, function(x) x$byClass[3]))
+  recalls1 = unlist(lapply(confs_mats, function(x) x$byClass[1]))
+  
+  
+  confs_mats2 <- mapply(function(dbn2, real)
+  {
+    confusionMatrix( reference = factor(real), data = factor(dbn2), positive = "1")
+    
+  }, dbns2, reals, SIMPLIFY = FALSE)
+  precisions2 = unlist(lapply(confs_mats, function(x) x$byClass[3]))
+  recalls2 = unlist(lapply(confs_mats, function(x) x$byClass[1]))
+  
+  
+  
+}
