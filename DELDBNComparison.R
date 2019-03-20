@@ -70,3 +70,37 @@ GenerateResults(dataS, DBNList, realDBN)
 
 DBNList <- list("DELDBN_D_0.001" = delDBN_D_0.001, "DELDBN_D_0.005" = delDBN_D_0.005, "DELDBN_D_0.01" = delDBN_D_0.01 ,"DELDBN_D_0.05" = delDBN_D_0.05, "DELDBN_D_0.1" = delDBN_D_0.1, "real" = realDBN)
 GenerateResults(dataD, DBNList, realDBN)
+
+
+delDBN_0.001_s_100 <- mclapply(datasets, function(x) DELDBN(ShiftData(x$data),0.001))
+CalculatePrecisionAndRecallForMultiple(delDBN_0.001_s_100, datasets)
+delDBN_0.005_s_100 <- mclapply(datasets, function(x) DELDBN(ShiftData(x$data),0.005))
+CalculatePrecisionAndRecallForMultiple(delDBN_0.005_s_100, datasets)
+
+delDBN_0.01_s_100 <- mclapply(datasets, function(x) DELDBN(ShiftData(x$data),0.01))
+CalculatePrecisionAndRecallForMultiple(delDBN_0.01_s_100, datasets)
+
+delDBN_0.05_s_100 <- mclapply(datasets, function(x) DELDBN(ShiftData(x$data),0.05))
+CalculatePrecisionAndRecallForMultiple(delDBN_0.05_s_100, datasets)
+
+delDBN_0.1_s_100 <- mclapply(datasets, function(x) DELDBN(ShiftData(x$data),0.1))
+CalculatePrecisionAndRecallForMultiple(delDBN_0.1_s_100, datasets)
+
+
+
+delDBN_0.001_d_100 <- mclapply(datasets, function(x) DELDBN(DifferentialData(x$data),0.001))
+CalculatePrecisionAndRecallForMultiple(delDBN_0.001_d_100, datasets)
+
+delDBN_0.005_d_100 <- mclapply(datasets, function(x) DELDBN(DifferentialData(x$data),0.005))
+CalculatePrecisionAndRecallForMultiple(delDBN_0.005_d_100, datasets)
+
+delDBN_0.01_d_100 <- mclapply(datasets, function(x) DELDBN(DifferentialData(x$data),0.01))
+CalculatePrecisionAndRecallForMultiple(delDBN_0.01_d_100, datasets)
+
+delDBN_0.05_d_100 <- mclapply(datasets, function(x) DELDBN(DifferentialData(x$data),0.05))
+CalculatePrecisionAndRecallForMultiple(delDBN_0.05_s_100, datasets)
+
+delDBN_0.1_d_100 <- mclapply(datasets, function(x) DELDBN(DifferentialData(x$data),0.1))
+CalculatePrecisionAndRecallForMultiple(delDBN_0.1_d_100, datasets)
+
+
