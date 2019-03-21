@@ -131,7 +131,7 @@ main <- function()
   gs_bic_100 <- mclapply(datasets, function(x)  GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = empty_weights) )
   CalculatePrecisionAndRecallForMultiple(gs_bic_100, datasets)
   
-  
+
   gs_weight_0_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y$mat$S1ls, multiplier = -1, adjustment = 0), datasets, G1s, SIMPLIFY = FALSE)
   CalculatePrecisionAndRecallForMultiple(gs_weight_0_100, datasets)
   
@@ -157,7 +157,7 @@ main <- function()
   CalculatePrecisionAndRecallForMultiple(gs_lasso_adj_3.5_100, datasets)
   
   
-  ### Very important, limit max number of parents in GreedySearch to improve precision. Lets say 4
+  ### Very important, limit max number of parents in GreedySearch to improve precision. Lets say 5
   gs_bic_maxP_100 <- mclapply(datasets, function(x)  GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = empty_weights,maxP = 5) )
   CalculatePrecisionAndRecallForMultiple(gs_bic_maxP_100, datasets)
   
@@ -176,6 +176,9 @@ main <- function()
   
   
   ## MaxP = 3
+  gs_bic_maxP3_100 <- mclapply(datasets, function(x)  GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = empty_weights,maxP = 3) )
+  CalculatePrecisionAndRecallForMultiple(gs_bic_maxP3_100, datasets)
+  
   gs_weight_maxP3_0_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y$mat$S1ls, multiplier = -1, adjustment = 0, maxP = 3), datasets, G1s, SIMPLIFY = FALSE)
   CalculatePrecisionAndRecallForMultiple(gs_weight_maxP3_0_100, datasets)
   
