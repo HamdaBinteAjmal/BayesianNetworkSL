@@ -252,9 +252,9 @@ Max_bics_100 <- lapply(bic_and_zeros_100, function(x)
 results_max_bics_100 <- CalculatePrecisionAndRecallForMultiple(Max_bics_100, datasets)
 
 ## BIC + G1DBN
-
-all_targets_weights_100 <- lapply(G1s, function(x) CalculateWeightsOfAllTargets( all_parent_combinations, p, x$mat$S1ls))
-save(file = "G1DBNScoresFor100.rds",all_targets_weights_100)
+# expensive
+#all_targets_weights_100 <- lapply(G1s, function(x) CalculateWeightsOfAllTargets( all_parent_combinations, p, x$mat$S1ls))
+#save(file = "G1DBNScoresFor100.rds",all_targets_weights_100)
 # BIC+G1DBN+adjustment zero adjustment
 load(file = "G1DBNScoresFor100.rds")
 bic_and_weights_100 <- mapply(function(x,y) CombineBICandWeight(x, y, adjustment = 0, multiplier = -1, all_parent_combinations), all_targets_weights_100, scores_100, SIMPLIFY = FALSE)
@@ -266,7 +266,6 @@ CalculatePrecisionAndRecallForMultiple(Max_BN_0_100, datasets)
 #all_targets_weights_2.5_100 <- CalculateWeightsOfAllTargets( all_parent_combinations, p, G1_mat,  adjustment = 2.5, negative = TRUE)
 bic_and_weights_2.5_100 <- mapply(function(x,y) CombineBICandWeight(x, y, adjustment = 2.5, multiplier = -1, all_parent_combinations), all_targets_weights_100, scores_100, SIMPLIFY = FALSE)
 Max_BN_2.5_100 <- lapply(bic_and_weights_2.5_100 , function(x) ConstructBNUsingMaxScoringParents(x, all_parent_combinations, nodes))
-DBNList <- Max_BN_2.5_100
 CalculatePrecisionAndRecallForMultiple(Max_BN_2.5_100, datasets)
 
 ## BIC + G1DBN, adjustment = 2.0
@@ -298,3 +297,7 @@ CalculatePrecisionAndRecallForMultiple(max_BN_lasso_2.5_100, datasets)
 bic_and_lasso_3.5_100 <- mapply(function(x,y) CombineBICandWeight(x, y, adjustment = 3.5, multiplier = 1, all_parent_combinations), all_targets_lasso_100, scores_100, SIMPLIFY = FALSE)
 max_BN_lasso_3.5_100 <- lapply(bic_and_lasso_3.5_100 , function(x) ConstructBNUsingMaxScoringParents(x, all_parent_combinations, nodes))
 CalculatePrecisionAndRecallForMultiple(max_BN_lasso_3.5_100, datasets)
+
+
+
+#
