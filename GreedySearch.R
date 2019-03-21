@@ -3,7 +3,7 @@ library(parallel)
 ## Searchs greedily for the max scoring parent. If it increases the current score, add it, 
 ## then repeat. Stop when
 ## no other parents increases score
-GreedySearchParentsWithAdjustedWeight <- function(data, p = 50, n = 20, adjustment = 0, multiplier = -1, score_mat)
+GreedySearchParentsWithAdjustedWeight <- function(data, p = 50, n = 20, adjustment = 0, multiplier = -1, score_mat, maxP = Inf)
 {
   # score_mat <- G1DBN::DBNScoreStep1(data)
   dataS <- ShiftData(data)
@@ -11,7 +11,7 @@ GreedySearchParentsWithAdjustedWeight <- function(data, p = 50, n = 20, adjustme
   all_parents <-  names(dataS)[1:p]
   local_bns_arcs <- lapply(targets, function(x)
     
-    GreedySearchWithAdjustedWeight_OneTarget(score_mat = score_mat, targetIdx = x, all_parents = all_parents, multiplier = multiplier, dataS = dataS, adjustment = adjustment))
+    GreedySearchWithAdjustedWeight_OneTarget(score_mat = score_mat, targetIdx = x, all_parents = all_parents, multiplier = multiplier, dataS = dataS, adjustment = adjustment, maxP = maxP))
   
   fullBN <- do.call(what = rbind, args = local_bns_arcs)
   nodes <- names(dataS)
@@ -23,7 +23,7 @@ GreedySearchParentsWithAdjustedWeight <- function(data, p = 50, n = 20, adjustme
 }
 
 ## Inner function
-GreedySearchWithAdjustedWeight_OneTarget<- function(score_mat, targetIdx, all_parents, adjustment = 0, multiplier = -1, dataS)
+GreedySearchWithAdjustedWeight_OneTarget<- function(score_mat, targetIdx, all_parents, adjustment = 0, multiplier = -1, dataS, maxP = maxP)
 {
   keep_adding = 1
   targetNode <- paste0("V", targetIdx , "_1")
@@ -39,7 +39,8 @@ GreedySearchWithAdjustedWeight_OneTarget<- function(score_mat, targetIdx, all_pa
   bn <- bnlearn::empty.graph(nodes)
  # empty_bn_score <-  score(x  =bn, data = data_subset, type = "bic-g", by.node = TRUE )
   old_bic <-  score(x  =bn, data = data_subset, type = "bic-g",by.node = TRUE )[targetNode]
-  while (keep_adding != 0)
+  TotalParents <- 0
+  while (keep_adding > 0 && TotalParents < maxP)
   {
     
    
@@ -67,11 +68,14 @@ GreedySearchWithAdjustedWeight_OneTarget<- function(score_mat, targetIdx, all_pa
       max_idx <- which.max(difference)
       best_parent <- all_parents[max_idx]
       bn <- set.arc(bn, from = best_parent, to = targetNode)
+      TotalParents <- TotalParents + 1
       #print(paste0("Adding Parent: ", best_parent ))
       all_parents[max_idx] <- NA
       old_bic <- bic_and_weight[max_idx]
     }
+    
   }
+  #print(TotalParents)
   return (arcs(bn))
   
 }
@@ -146,10 +150,67 @@ main <- function()
   gs_lasso_adj_0_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y, multiplier = 1, adjustment = 0), datasets, lasso_100, SIMPLIFY = FALSE)
   CalculatePrecisionAndRecallForMultiple( gs_lasso_adj_0_100, datasets)
   
-  gs_lasso_adj_2.5_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y, multiplier = 2.5, adjustment = 0), datasets, lasso_100, SIMPLIFY = FALSE)
+  gs_lasso_adj_2.5_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y, multiplier = 1, adjustment = 2.5), datasets, lasso_100, SIMPLIFY = FALSE)
   CalculatePrecisionAndRecallForMultiple( gs_lasso_adj_2.5_100, datasets)
   
-  gs_lasso_adj_3.5_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y, multiplier = 3.5, adjustment = 0), datasets, lasso_100, SIMPLIFY = FALSE)
+  gs_lasso_adj_3.5_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y, multiplier = 1, adjustment = 3.5), datasets, lasso_100, SIMPLIFY = FALSE)
   CalculatePrecisionAndRecallForMultiple(gs_lasso_adj_3.5_100, datasets)
+  
+  
+  ### Very important, limit max number of parents in GreedySearch to improve precision. Lets say 4
+  gs_bic_maxP_100 <- mclapply(datasets, function(x)  GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = empty_weights,maxP = 5) )
+  CalculatePrecisionAndRecallForMultiple(gs_bic_maxP_100, datasets)
+  
+  gs_weight_maxP_0_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y$mat$S1ls, multiplier = -1, adjustment = 0, maxP = 5), datasets, G1s, SIMPLIFY = FALSE)
+  CalculatePrecisionAndRecallForMultiple(gs_weight_maxP_0_100, datasets)
+  
+  
+  
+  gs_weight_maxP_2_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y$mat$S1ls, multiplier = -1, adjustment = 2, maxP = 5), datasets, G1s, SIMPLIFY = FALSE)
+  CalculatePrecisionAndRecallForMultiple(gs_weight_maxP_2_100, datasets)
+  
+  
+  
+  gs_weight_maxP_2.5_100 <-  mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y$mat$S1ls, multiplier = -1, adjustment = 2.5, maxP = 5), datasets, G1s, SIMPLIFY = FALSE)
+  CalculatePrecisionAndRecallForMultiple(gs_weight_maxP_2.5_100, datasets)
+  
+  
+  ## MaxP = 3
+  gs_weight_maxP3_0_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y$mat$S1ls, multiplier = -1, adjustment = 0, maxP = 3), datasets, G1s, SIMPLIFY = FALSE)
+  CalculatePrecisionAndRecallForMultiple(gs_weight_maxP3_0_100, datasets)
+  
+  
+  
+  gs_weight_maxP3_2_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y$mat$S1ls, multiplier = -1, adjustment = 2, maxP = 3), datasets, G1s, SIMPLIFY = FALSE)
+  CalculatePrecisionAndRecallForMultiple(gs_weight_maxP3_2_100, datasets)
+  
+  
+  gs_weight_maxP3_2.5_100 <-  mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y$mat$S1ls, multiplier = -1, adjustment = 2.5, maxP = 3), datasets, G1s, SIMPLIFY = FALSE)
+  CalculatePrecisionAndRecallForMultiple(gs_weight_maxP3_2.5_100, datasets)
+  
+  ## MAx p  = 3 for lasss
+  
+  load(file = "lasso_100.rds")
+  
+  gs_lasso_adj_MaxP3_0_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y, multiplier = 1, adjustment = 0, maxP = 3), datasets, lasso_100, SIMPLIFY = FALSE)
+  CalculatePrecisionAndRecallForMultiple( gs_lasso_adj_MaxP3_0_100, datasets)
+  
+  gs_lasso_adj_MaxP3_2.5_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y, multiplier = 1, adjustment = 2.5, maxP = 3), datasets, lasso_100, SIMPLIFY = FALSE)
+  CalculatePrecisionAndRecallForMultiple( gs_lasso_adj_MaxP3_2.5_100, datasets)
+  
+  gs_lasso_adj_MaxP3_3.5_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y, multiplier = 1, adjustment = 3.5, maxP = 3), datasets, lasso_100, SIMPLIFY = FALSE)
+  CalculatePrecisionAndRecallForMultiple(gs_lasso_adj_MaxP3_3.5_100, datasets)
+  
+  ## Maxp = 5 for lasso
+  
+  gs_lasso_adj_MaxP5_0_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y, multiplier = 1, adjustment = 0, maxP = 5), datasets, lasso_100, SIMPLIFY = FALSE)
+  CalculatePrecisionAndRecallForMultiple( gs_lasso_adj_MaxP5_0_100, datasets)
+  
+  gs_lasso_adj_MaxP5_2.5_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y, multiplier = 1, adjustment = 2.5, maxP = 5), datasets, lasso_100, SIMPLIFY = FALSE)
+  CalculatePrecisionAndRecallForMultiple( gs_lasso_adj_MaxP5_2.5_100, datasets)
+  
+  gs_lasso_adj_MaxP5_3.5_100 <- mcmapply(function(x,y) GreedySearchParentsWithAdjustedWeight(data = x$data, p = 50, n = 20, score_mat = y, multiplier = 1, adjustment = 3.5, maxP = 5), datasets, lasso_100, SIMPLIFY = FALSE)
+  CalculatePrecisionAndRecallForMultiple(gs_lasso_adj_MaxP5_3.5_100, datasets)
+  
   
 }
