@@ -10,7 +10,7 @@ DBNList <- list("lasso_0.9" = lasso_BN_0.9, "lasso_0.95" = lasso_BN_0.95, "lasso
 GenerateResults(dataS, DBNList, realDBN)
 
 ## For 100
-
+load(file = "lasso_100.rds")
 lasso_BN_0.9_100 <- mclapply(lasso_100, function(x) ConvertToBNFromG(G1DBN::BuildEdges(1-x, threshold = 0.9), 50))
 lasso_BN_0.95_100 <-  mclapply(lasso_100, function(x) ConvertToBNFromG(G1DBN::BuildEdges(1-x, threshold = 0.95), 50))
 lasso_BN_0.85_100 <-  mclapply(lasso_100, function(x) ConvertToBNFromG(G1DBN::BuildEdges(1-x, threshold = 0.85), 50))
