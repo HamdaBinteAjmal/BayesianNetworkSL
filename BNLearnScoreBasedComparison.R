@@ -12,7 +12,7 @@ GenerateResults(dataS, DBNList, realDBN)
 
 
 
-hc_maxP_3_100 <- mclapply(datasets, function(x) hc(x = ShiftData(x$data), blacklist = bl, score = "bic-g"  , restart = 100, maxp = 3))
+hc_maxP_3_100 <- mclapply(datasets, function(x) hc(x = ShiftData(x$data), blacklist = bl, score = "bic-g"  , restart = 1, maxp = 3))
 
 tabu_maxP_3_100 <- mclapply(datasets, function(x) tabu(x = ShiftData(x$data), start = NULL, whitelist = NULL, blacklist = bl, score = "bic-g",debug = FALSE, tabu = 100, max.tabu = 100, maxp = 3, optimized = TRUE))
 
