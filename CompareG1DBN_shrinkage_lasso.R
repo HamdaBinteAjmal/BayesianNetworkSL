@@ -13,7 +13,7 @@ curves_G1<- mapply(function(G1, ds) PRCurve_GeneNet(score=G1$mat$S1ls,validMat=a
 
 G1_means = CalculateMeans(curves_G1)
 
-
+save(G1s, file = "G1s.rds")
 
 
 ## DO G2 ## 
@@ -45,6 +45,9 @@ shrink_means = CalculateMeans(curves_shrink)
 
 lassos = lapply(datasets, function(x) tryCatch(ApplyLars(x$data), error = function(e) NULL))
 badbad = which(unlist(lapply(lassos, is.null)))
+
+
+lasso1 <- lapply(lassos, function(x) 1 - x)
 
 curves_lasso <- mapply(function(lasso, ds) PRCurve_GeneNet(score=lasso,validMat=abs(ds$RealNet$AdjMatrix )>0,dec=TRUE), lassos, datasets, SIMPLIFY = FALSE)
 lasso_means <- CalculateMeans(curves_lasso)
