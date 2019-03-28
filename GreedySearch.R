@@ -3,6 +3,25 @@ library(parallel)
 ## Searchs greedily for the max scoring parent. If it increases the current score, add it, 
 ## then repeat. Stop when
 ## no other parents increases score
+GreedySearchParentsWithAdjustedWeight_selectedParents <- function(data, p = 50, n = 20, adjustment = 0, multiplier = -1, score_mat, maxP = Inf, pred_pos)
+{
+  # score_mat <- G1DBN::DBNScoreStep1(data)
+  dataS <- ShiftData(data)
+  targets <- 1:p
+  all_parents <-  names(dataS)[pred_pos]
+  print(all_parents)
+  local_bns_arcs <- lapply(targets, function(x)
+    
+    GreedySearchWithAdjustedWeight_OneTarget(score_mat = score_mat, targetIdx = x, all_parents = all_parents, multiplier = multiplier, dataS = dataS, adjustment = adjustment, maxP = maxP))
+  
+  fullBN <- do.call(what = rbind, args = local_bns_arcs)
+  nodes <- names(dataS)
+  bn<- bnlearn::empty.graph(nodes)
+  arcs(bn) <- fullBN
+  return (bn)
+  
+  
+}
 GreedySearchParentsWithAdjustedWeight <- function(data, p = 50, n = 20, adjustment = 0, multiplier = -1, score_mat, maxP = Inf)
 {
   # score_mat <- G1DBN::DBNScoreStep1(data)
@@ -22,18 +41,21 @@ GreedySearchParentsWithAdjustedWeight <- function(data, p = 50, n = 20, adjustme
   
 }
 
+
 ## Inner function
 GreedySearchWithAdjustedWeight_OneTarget<- function(score_mat, targetIdx, all_parents, adjustment = 0, multiplier = -1, dataS, maxP = maxP)
 {
   keep_adding = 1
   targetNode <- paste0("V", targetIdx , "_1")
   nodes <- c(all_parents, targetNode)
-  
- # print(targetNode)
+ 
+  print(targetNode)
+  print(nodes)
   data_subset <- dataS[,nodes]
   multi  = multiplier
   weights <- multi * (log(score_mat) + adjustment)
-  weight_vector <-  weights[targetIdx,]
+  parentsIdx <- which(names(dataS) %in% all_parents)
+  weight_vector <-  weights[targetIdx, parentsIdx] # critical change be very careful
   
   
   bn <- bnlearn::empty.graph(nodes)
