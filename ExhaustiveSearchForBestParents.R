@@ -5,8 +5,32 @@
 ## This coded combines BIC score with the weights calculated using the G1DBN score and the lasso score.
 ## For G1DBN score, do BIC_score -log(G1DBN_score)-adjustment
 ## Adjustment is calculated by looking at the graph
-
-
+ApplyLars_selectedParents <- function(data, pred_pos)
+{
+  predictors  = as.matrix(data[1:(nrow(data)-1), pred_pos])
+  response = data[2:nrow(data),]
+  nR = ncol(response)
+  arcs = lapply(1:nR, function(y) 
+  {
+    print(y)
+    Y = response[,y]
+    arcs = LASSO(X = predictors, Y = Y)
+    
+  })
+  scores = abs(do.call(rbind, arcs))
+  return(scores)
+}
+FullExhaustiveSearch_selectedParents <- function(dataS, parents, beta = NULL)
+{
+  allNodes = names(dataS)
+  All_possible_parents = parents
+  #All_possible_parents = allParents[!grepl("_1", allNodes)]
+  Allcombinations = MakeAllPossibleCombination(All_possible_parents)
+  All_possible_targets = allNodes[grepl("_1", allNodes)]
+  ScoreAllTargets = lapply(All_possible_targets, function(x) ScoreEntirepossibleSetsOfParents(dataS, x, Allcombinations, beta))
+  
+  
+}
 FullExhaustiveSearch <- function(dataS, beta = NULL)
 {
   allNodes = names(dataS)
