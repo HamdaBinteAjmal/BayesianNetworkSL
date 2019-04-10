@@ -8,7 +8,8 @@ noiseLevel = 10
 datasets = lapply(seeds, function(x) SimulateData(p,n,noiseLevel, x ))
 
 alpha1 = 0.7
-G1s = lapply(datasets, function(x) ExecuteG1DBNS1(x$data, alpha1))
+load("G1s.rds")
+#G1s = lapply(datasets, function(x) ExecuteG1DBNS1(x$data, alpha1))
 curves_G1<- mapply(function(G1, ds) PRCurve_GeneNet(score=G1$mat$S1ls,validMat=abs(ds$RealNet$AdjMatrix )>0,dec=FALSE), G1s, datasets, SIMPLIFY = FALSE)
 
 G1_means = CalculateMeans(curves_G1)
